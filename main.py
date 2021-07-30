@@ -308,7 +308,9 @@ def delete_images(media_items, log_file=None):
         options.add_argument('--disable-gpu')
 
     profile = webdriver.FirefoxProfile(PROFILE_PATH)
-    driver = webdriver.Firefox(firefox_profile=profile, options=options)
+    
+    # Use the full path
+    driver = webdriver.Firefox(firefox_profile=profile, options=options, executable_path="YOUR_FULL_PATH")
 
     driver.set_window_position(0, 0)
     driver.set_window_size(1024, 768)
