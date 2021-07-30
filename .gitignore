@@ -1,6 +1,11 @@
 *.pickle
 __pycache__
 secrets.json
+TEST
+*.json
+*.csv
+*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
