@@ -308,7 +308,7 @@ def delete_images(media_items, log_file=None):
         options.add_argument('--disable-gpu')
 
     profile = webdriver.FirefoxProfile(PROFILE_PATH)
-    
+
     # Use the full path
     driver = webdriver.Firefox(firefox_profile=profile, options=options, executable_path="YOUR_FULL_PATH")
 
@@ -382,7 +382,9 @@ def download_images(response):
 def check_date(date):
     """Return True if the date is valid"""
 
-    day, month, year = map(int, date.split('/'))   
+    # Getting the date
+    month, day, year = get_date(date)
+
     correctDate = None
 
     try:
@@ -395,7 +397,7 @@ def check_date(date):
 def get_date(full_date):
     """Return the date separated as : day, month, year"""
 
-    day, month, year = map(int, full_date.split('/'))
+    month, day, year = map(int, full_date.split('/'))
 
     return day, month, year
 
@@ -441,14 +443,14 @@ def main():
                         '--start_date',
                         metavar='startdate',
                         type=str,
-                        help='Starting date must be D/M/Y')
+                        help='Starting date must be M/D/Y')
 
     my_parser.add_argument(
                         '-e',
                         '--end_date',
                         metavar='enddate',
                         type=str,
-                        help='Ending date must be D/M/Y')
+                        help='Ending date must be M/D/Y')
 
 
     my_parser.add_argument('-d',
