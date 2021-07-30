@@ -4,7 +4,7 @@ import requests
 import sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -12,9 +12,13 @@ from selenium.webdriver.support import expected_conditions as ec
 GOOGLE_PHOTOS = "https://photos.google.com/"
 LOG_FILE_DOWN = "downloaded_logs.txt"
 LOG_FILE_DEL = "deleted_logs.txt"
-PROFILE_PATH = "/home/none/.config/chromium/"
+
+# first make sure to install geckodriver : brew install geckodriver
+# to get the profile open firefox then go to : about:profiles
+# select the default-release root path, that's it :D
+PROFILE_PATH = "/home/none/.mozilla/firefox/iks1vvci.default-release"
 PATH = os.getcwd() + '/test'
-DEBUG = False
+DEBUG = True
 
 def download_image(url, destination_folder, file_name):
 
@@ -43,7 +47,8 @@ def click_info(driver):
     try :
         element_get = WebDriverWait(driver, 3).until(ec.visibility_of_element_located((By.XPATH, '/html/body/div[1]/div/c-wiz/div[4]/c-wiz/div[1]/div[2]')))
     except :
-        print("It's not there")
+        print("It's not there, trying to click it")
+        driver.find_element_by_xpath(info_button).click()
 
 def save_log(log, file_):
     """Save the logs for deleted images and added images"""
@@ -154,18 +159,20 @@ def main():
 if __name__=='__main__':
 
     options = Options()
-    options.add_argument(f"--user-data-dir={PROFILE_PATH}")
 
     if not DEBUG:
         options.add_argument("--mute-audio")
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
 
-    # Changing the download path 
-    prefs = {'download.default_directory' : PATH}
-    options.add_experimental_option('prefs', prefs)
+    # Changing the download path for gecko
+    ### Here ###
 
-    driver = webdriver.Chrome(options=options)
+    # Creating the profile
+    from webdriver_manager.firefox import GeckoDriverManager
+
+    profile = webdriver.FirefoxProfile(PROFILE_PATH)
+    driver = webdriver.Firefox(firefox_profile=profile, options=options)
 
     driver.set_window_position(0, 0)
     driver.set_window_size(1024, 768)
@@ -176,7 +183,7 @@ if __name__=='__main__':
     first_photo_xpath = '//*[@id="ow45"]/div[1]/div[2]/div[1]/div[2]'
     click(driver, first_photo_xpath)    
 
-    time.sleep(1) 
+    time.sleep(2) 
     click_info(driver)
 
     time.sleep(2)
