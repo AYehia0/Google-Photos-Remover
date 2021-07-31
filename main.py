@@ -288,6 +288,9 @@ def delete_images(media_items, log_file=None):
     driver.set_window_position(0, 0)
     driver.set_window_size(1024, 768)
 
+    # WARNING msg
+    print(f"You are deleting {len(media_items)} item")
+
     driver.get(end_url)
     end_url = driver.current_url
 
