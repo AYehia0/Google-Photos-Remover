@@ -51,19 +51,6 @@ VID_EXT = ['mp4', 'flv', 'mkv', 'gif', 'avi', 'wmv', '3gp', 'mpv', 'amv', 'mpeg'
 PROFILE_PATH = "/home/none/.mozilla/firefox/iks1vvci.default-release"
 DEBUG = False
 
-# getting the albums 
-def get_all_albums():
-    test_album = service.albums().list(pageSize=50).execute()
-    album_me = test_album.get("albums")
-    next_page = test_album.get("nextPageToken")
-
-    while next_page:
-        test_album = service.albums().list(pageSize=50, pageToken=next_page).execute()
-        album_me.append(test_album.get("albums"))
-        next_page = test_album.get("nextPageToken")
-
-    return album_me
-
 def save_image(url, destination_folder, file_name):
     """Save image to a file"""
 
@@ -108,7 +95,6 @@ def get_media_items(service, filter_):
     except Exception as e:
         print(e)
         return None
-
 
 def conv_size(size_bytes):
     """Convert bytes to human readable size"""
@@ -189,8 +175,6 @@ def get_log(media_items, file_name, flag, using_log=False):
                 'exists': flag
             })
 
-
-
 def save_logs(media_items):
     """Save the logs for images based on some filters"""
 
@@ -269,7 +253,6 @@ def delete_images(media_items, log_file=None):
 
     else:
         try :
-
             # reading from a log file 
             file_handle = open(log_file, 'r')
             media_items = json.load(file_handle)
@@ -323,7 +306,6 @@ def delete_images(media_items, log_file=None):
         sys.exit()
 
     while True:
-
         try:
             time.sleep(.5)
 
@@ -360,7 +342,6 @@ def download_images(response):
         else:
             img_url += '=d'
 
-
         # Saving the image
         save_image(img_url, "TEST", img_name)
 
@@ -371,7 +352,6 @@ def check_date(date):
     month, day, year = get_date(date)
 
     correctDate = None
-
     try:
         newDate = datetime(year, month, day)
         correctDate = True
