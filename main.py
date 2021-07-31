@@ -492,7 +492,7 @@ def main():
     if (args.start_date or args.end_date) and args.log:
         my_parser.error("Use the date range with while only --download, --remove or --download_remove")
 
-    if not (args.download or args.remove or args.get):
+    if not (args.download or args.download_remove or args.remove or args.get):
         my_parser.error('No action requested, add --download or --remove or --get')
     else:
         if args.start_date and args.end_date:
