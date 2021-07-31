@@ -310,7 +310,7 @@ def delete_images(media_items, log_file=None):
     profile = webdriver.FirefoxProfile(PROFILE_PATH)
 
     # Use the full path
-    driver = webdriver.Firefox(firefox_profile=profile, options=options, executable_path="YOUR_FULL_PATH")
+    driver = webdriver.Firefox(firefox_profile=profile, options=options)
 
     driver.set_window_position(0, 0)
     driver.set_window_size(1024, 768)
@@ -408,7 +408,6 @@ def get_response_body(start_date, end_date):
     edate_day, edate_month, edate_year = get_date(end_date)
 
     request_body = {
-
         # Changing the page size determines how many to be fetched per request
         'pageSize': 20,
         'filters': {
@@ -432,53 +431,106 @@ def get_response_body(start_date, end_date):
     }
     return request_body
 
+def do_command(command_type, service, request_body, mod_flag, use_media_items=True, use_log_file=None):
+    """
+    Perform the command based on its type
+
+    types :
+        download : -d , creates the mediaItems, download then save logs
+        remove :   -r , creates the mediaItems, Remove then save logs
+        download_remove : -dr , creates the mediaItems, download , remove, then save logs
+        get logs : -g , gets the logs from google photos api
+
+    flags :
+        mod_flag : modification flag, Photo exists in the server or not
+        use_media_items : while deleting using a log file, None is used
+        use_log_file: setting the name for some Print log file 
+    """
+
+    # Flags to know what to do
+    download_flag, remove_flag = False, False
+
+    print("Getting data from google.photos please wait...")
+    # Getting the info about the range of dates
+
+    if use_media_items:
+        # checking if log file is provided 
+        media_items = get_media_items(service, request_body)
+
+        if media_items is None:
+            print("No images, Exiting...")
+            return
+
+    # checking the type of the command 
+    if command_type == '-dr':
+        download_flag, remove_flag = True, True
+    elif command_type == '-d':
+        download_flag = True
+    elif command_type == '-r':
+        remove_flag = True
+
+    if download_flag:
+        # Downloading the images
+        print("Downloading, please wait...")
+        download_images(media_items)
+
+    if remove_flag:
+
+        if use_media_items == False:
+            media_items = None
+            print(f"Getting data from {log_file} please wait...")
+            delete_images(media_items, use_log_file)
+
+        # Removing the images
+        print("Removing, please wait...")
+        delete_images(media_items)
+
+    if command_type == '-g':
+        print("Saving to a log file...")
+
+        get_log(media_items, 'report_logs.csv', True) 
+        save_logs(media_items)
+
+        return
+
+    # Saving logs
+    print("Saving to a log file...")
+    get_log(media_items, 'downloaded_removed.csv', mod_flag) 
+
 
 def main():
     # Create the parser
     my_parser = argparse.ArgumentParser(description='Download/Remove Google-Photos using your terminal')
 
-    # Add the arguments
-    my_parser.add_argument(
-                        '-s',
-                        '--start_date',
-                        metavar='startdate',
-                        type=str,
-                        help='Starting date must be M/D/Y')
+    # Add Date arguments
+    my_parser.add_argument('-s', '--start_date', metavar='', type=str, help='Starting date must be M/D/Y')
+    my_parser.add_argument('-e', '--end_date', metavar='', type=str, help='Ending date must be M/D/Y')
 
-    my_parser.add_argument(
-                        '-e',
-                        '--end_date',
-                        metavar='enddate',
-                        type=str,
-                        help='Ending date must be M/D/Y')
+    # only one command allowed
+    group = my_parser.add_mutually_exclusive_group()
+ 
+    group.add_argument('-d', '--download', action='store_true', help='command: Download Photos')
+    group.add_argument('-r', '--remove', action='store_true', help='command: Remove Photos')
+    group.add_argument('-dr', '--download-remove', action='store_true', help='command: Download then Remove')
 
-
-    my_parser.add_argument('-d',
-                        '--download',
-                        action='store_true',
-                        help='command: Download Photos')
-
-    my_parser.add_argument('-r',
-                        '--remove',
-                        action='store_true',
-                        help='command: Remove Photos')
-
-    my_parser.add_argument('-g',
-                        '--get',
-                        action='store_true',
-                        help='Get a info based on the date')
-
-
-    my_parser.add_argument('--log', '-l', dest="log", help="Use an existing log file")
+    # logs related args
+    my_parser.add_argument('-g', '--get', action='store_true', help='Get a info based on the date')
+    my_parser.add_argument('--log', '-l', dest="log", help="Use an existing log file to remove photos")
 
     # Execute parse_args()
     args = my_parser.parse_args()
+
+    # check for invalid options 
+    if (args.download_remove or args.download) and args.log:
+        my_parser.error("Can't download using an existing log file!")
+
+    if (args.start_date or args.end_date) and args.log:
+        my_parser.error("Use the date range with while only --download, --remove or --download_remove")
 
     if not (args.download or args.remove or args.get):
         my_parser.error('No action requested, add --download or --remove or --get')
     else:
         if args.start_date and args.end_date:
-            # do the shit based on the download/remove 
 
             # Creating the service
             service = Create_Service(CRED_FILE, APP_NAME, API_VERSION, SCOPES)
@@ -497,108 +549,28 @@ def main():
 
             # if get only
             if args.get:
-
-                # checking if log file is provided 
-                media_items = get_media_items(service, request_body)
-                #print(media_items)
-
-                if media_items is None:
-                    print("No images, Exiting...")
-                    sys.exit()
-
-                print("Saving to a log file...")
-                get_log(media_items, 'report_logs.csv', True) 
-
-                save_logs(media_items)
-
+                do_command('-g', service, request_body, True)
 
             # if download and remove 
-            if args.download and args.remove:
-
-                print("Getting data from google.photos please wait...")
-                # Getting the info about the range of dates
-
-                # checking if log file is provided 
-                media_items = get_media_items(service, request_body)
-
-                if media_items is None:
-                    print("No images, Exiting...")
-                    sys.exit()
-
-                # first downloading then removing
-                # Downloading the images
-                print("Downloading, please wait...")
-                download_images(media_items)
-
-                # Removing the images
-                print("Removing, please wait...")
-                delete_images(media_items)
-
-                # Saving logs
-                print("Saving to a log file...")
-                get_log(media_items, 'downloaded_removed.csv', False) 
-
-                # exiting 
-                sys.exit()
+            if args.download_remove:
+                do_command('-dr', service, request_body, False)
 
             # if download only
             if args.download:
-
-                # checking if log file is provided 
-                media_items = get_media_items(service, request_body)
-
-                if media_items is None:
-                    print("No images, Exiting...")
-                    sys.exit()
-
-                # first downloading then removing
-                # Downloading the images
-                print("Downloading, please wait...")
-                download_images(media_items)
-
-                print("Saving to a log file...")
-                get_log(media_items, 'downloaded_removed.csv', True) 
+                do_command('-d', service, request_body, True)
 
             # if remove only
             if args.remove:
-
-                # checking if log file is provided 
-                media_items = get_media_items(service, request_body)
-
-                if media_items is None:
-                    print("No images, Exiting...")
-                    sys.exit()
-
-                # first downloading then removing
-                # Removing the images
-                print("Removing, please wait...")
-                delete_images(media_items)
-
-                print("Saving to a log file...")
-                get_log(media_items, 'downloaded_removed.csv', False) 
-            
+                do_command('-r', service, request_body, False)
 
         elif args.log:
 
-            # check if remove
-            if args.remove and args.download:
+            if args.download_remove:
 
                 choice = input("For now, you can only use the log file to remove photos, since baseUrl expires after some time. Continue deleting ? (Y/N) : ")
 
                 if choice.upper() == 'Y':
-
-                    media_items = None
-
-                    # checking if the log file is valid or not 
-                    log_file = args.log
-                    print(f"Getting data from {log_file} please wait...")
-
-                    delete_images(media_items, log_file)
-
-                    print("Saving to a log file...")
-                    get_log(media_items, 'downloaded_removed_logs.csv', False) 
-
-                    sys.exit()
+                    do_command('-r', service, request_body, False, use_media_items=False, use_log_file=args.log)
 
                 elif choice.upper() == 'N':
                     print("Exiting...")
@@ -612,24 +584,10 @@ def main():
                 sys.exit()
 
             if args.remove:
-
-                media_items = None
-
-                # checking if the log file is valid or not 
-                log_file = args.log
-                print(f"Getting data from {log_file} please wait...")
-
-                delete_images(media_items, log_file)
-                
-                print("Saving to a log file...")
-                get_log(log_file, 'downloaded_removed_logs.csv', False) 
-
-
-                sys.exit()
+                do_command('-r', service, request_body, False,  use_media_items=False, use_log_file=args.log)
 
         else:
             my_parser.error('Invalid Operation, use -h for more info')
 
 if __name__=='__main__':
-
     main()
