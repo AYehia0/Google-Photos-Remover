@@ -58,6 +58,11 @@ def save_image(url, destination_folder, file_name):
     if not os.path.isdir(destination_folder):
         os.makedirs(destination_folder)
 
+    # check if file exsits 
+    # idk if "/" works on windows, who uses windows anyways 
+    if os.path.isfile(f"{destination_folder}/{file_name}"):
+        return
+
     # Checking if the response is OK
     response = requests.get(url)
     if response.status_code == 200:
