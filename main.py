@@ -262,21 +262,6 @@ def delete_images(media_items, log_file=None):
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as ec
 
-    def delete_shortcut(driver):
-        """
-        Smartly delete an image using google's shortcuts
-
-        to delete: # + Enter
-        
-        """
-        driver.find_element_by_css_selector('body').send_keys("#")
-        time.sleep(.5)
-        driver.find_element_by_css_selector('body').send_keys(Keys.RETURN)
-
-        time.sleep(1.5)
-        # move to the next image
-        # no need to move to the next image it does that by default
-
     if log_file is None: 
         # getting the first ProductUrl : our start point 
         start_url = media_items[0]['productUrl']
