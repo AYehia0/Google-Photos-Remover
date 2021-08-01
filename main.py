@@ -4,7 +4,7 @@ Delete idea, idk if it's gonna work or not
 
 https://photos.google.com/_/PhotosUi/data/batchexecute?rpcids=XwAOJf&f.sid=-8354753373044497059&bl=boq_photosuiserver_20210722.08_p0&hl=en&soc-app=165&soc-platform=1&soc-device=1&_reqid=2110374&rt=c
 
-https://photos.google.com/_/PhotosUi/data/batchexecute?rpcids=XwAOJf&f.sid=-8354753373044497059&bl=boq_photosuiserver_20210722.08_p0&hl=en&soc-app=165&soc-platform=1&soc-device=1&_reqid=2810374&rt=c
+https://photos.google.com/_/PhotosUi/data/batchexecute?rpcids=XwAOJf&f.sid=-{PHOTO_ID}&bl=boq_photosuiserver_{DATE}.08_p0&hl=en&soc-app=165&soc-platform=1&soc-device=1&_reqid={REQ_ID}&rt=c
 
 """
 
@@ -387,16 +387,16 @@ def get_response_body(start_date, end_date):
             'dateFilter': {
                 'ranges': [
                     {
-                        'startDate': {
-                            'year': sdate_year,
-                            'month': sdate_month,
-                            'day': sdate_day
-                        },
-                        'endDate': {
-                            'year': edate_year,
-                            'month': edate_month,
-                            'day': edate_day
-                        }
+                    'startDate': {
+                        'year': sdate_year,
+                        'month': sdate_month,
+                        'day': sdate_day
+                    },
+                    'endDate': {
+                        'year': edate_year,
+                        'month': edate_month,
+                        'day': edate_day
+                    }
                     }
                 ]
             }
@@ -537,6 +537,9 @@ def main():
                 do_command('-r', service, request_body, False)
 
         elif args.log:
+
+            if args.get:
+                my_parser.error("Use the --log arg with only -r ")
 
             if args.download_remove:
 
