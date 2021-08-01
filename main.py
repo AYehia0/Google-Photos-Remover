@@ -249,8 +249,8 @@ def delete_images(media_items, log_file=None):
             file_handle = open(log_file, 'r')
             media_items = json.load(file_handle)
 
-            start_url = media_items[0]['url']
-            end_url = media_items[-1]['url'] 
+            start_url = media_items[0]['productUrl']
+            end_url = media_items[-1]['productUrl'] 
 
             print(f"Total size to be removed : {get_total_size(media_items)}")
 
