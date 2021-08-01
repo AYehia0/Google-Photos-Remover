@@ -441,6 +441,9 @@ def do_command(command_type, service, request_body, mod_flag, use_media_items=Tr
             print(f"Getting data from {use_log_file} please wait...")
             delete_images(media_items, use_log_file)
 
+            # oh boi must return to avoid the next shit
+            return
+
         # Removing the images
         print("Removing, please wait...")
         delete_images(media_items)
