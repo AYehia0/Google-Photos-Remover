@@ -299,28 +299,35 @@ def delete_images(media_items, log_file=None):
     except :
         print("This Photo doesn't exist, are you sure you didn't delete before ?")
         sys.exit()
-
-    while True:
+    
+    max_urls = len(media_items)
+    counter = 1
+    while True or max_urls != 0:
         try:
-            time.sleep(.5)
-
-            driver.find_element_by_css_selector('body').send_keys("#")
-            time.sleep(1)
-            driver.find_element_by_css_selector('body').send_keys(Keys.RETURN)
             time.sleep(1)
 
             # getting the url
             url = driver.current_url
-
             #skips a photo, last or first idk
             if url == end_url:
                 break
-            print(f"Removing: {url}")
+
+            driver.find_element_by_css_selector('body').send_keys("#")
+            time.sleep(.5)
+            driver.find_element_by_css_selector('body').send_keys(Keys.RETURN)
+            time.sleep(1)
+
+            print(f"Removing-{counter}: {url}")
+            counter += 1
+
         except Exception as e:
             print(f"This Photo doesn't exist, are you sure you didn't delete before ? , Error: {e}")
-            driver.close()
-        
-    driver.close()
+            driver.quit()
+    
+    # Remove the last photo 
+
+    # it's quit not closed
+    driver.quit()
 
 def download_images(response):
     """Downloading an image by extracting the baseUrl from the response"""
