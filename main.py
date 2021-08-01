@@ -369,7 +369,7 @@ def get_response_body(start_date, end_date):
 
     request_body = {
         # Changing the page size determines how many to be fetched per request
-        'pageSize': 20,
+        'pageSize': 50,
         'filters': {
             'dateFilter': {
                 'ranges': [
