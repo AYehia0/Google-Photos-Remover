@@ -451,7 +451,7 @@ def do_command(command_type, service, request_body, mod_flag, use_media_items=Tr
 
         if use_media_items == False:
             media_items = None
-            print(f"Getting data from {log_file} please wait...")
+            print(f"Getting data from {use_log_file} please wait...")
             delete_images(media_items, use_log_file)
 
         # Removing the images
@@ -541,25 +541,9 @@ def main():
             if args.get:
                 my_parser.error("Use the --log arg with only -r ")
 
-            if args.download_remove:
-
-                choice = input("For now, you can only use the log file to remove photos, since baseUrl expires after some time. Continue deleting ? (Y/N) : ")
-
-                if choice.upper() == 'Y':
-                    do_command('-r', service, request_body, False, use_media_items=False, use_log_file=args.log)
-
-                elif choice.upper() == 'N':
-                    print("Exiting...")
-                    sys.exit()
-                else:
-                    print("Invalid, try again")
-                    sys.exit()
-
-            if args.download:
-                print("For now, you can only use the log file to remove photos, since baseUrl expires after some time, try again")
-                sys.exit()
-
             if args.remove:
+                # since we're fetching from a log file
+                service, request_body = None, None
                 do_command('-r', service, request_body, False,  use_media_items=False, use_log_file=args.log)
 
         else:
