@@ -286,9 +286,9 @@ def delete_images(media_items, log_file=None):
     # print(f"TotalNumberOfPhotos : {len(media_items)}")
     # print("--------------------------------")
 
-    time.sleep(1)
-    driver.get(start_url)
-    time.sleep(3)
+    # time.sleep(1)
+    # driver.get(start_url)
+    # time.sleep(3)
 
     current_url = driver.current_url 
 
@@ -300,17 +300,15 @@ def delete_images(media_items, log_file=None):
         print("This Photo doesn't exist, are you sure you didn't delete before ?")
         sys.exit()
     
-    max_urls = len(media_items)
+    max_urls = len(media_items)+1
     counter = 1
-    while True or max_urls != 0:
+
+    while max_urls != counter:
         try:
             time.sleep(1)
 
             # getting the url
             url = driver.current_url
-            #skips a photo, last or first idk
-            if url == end_url:
-                break
 
             driver.find_element_by_css_selector('body').send_keys("#")
             time.sleep(.5)
