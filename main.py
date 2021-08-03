@@ -110,8 +110,12 @@ def is_img(img_name):
 
     return True
 
-def get_img_size(img_url, img_name):
-    """Get the size of the image by making a GET requests and check the head"""
+def get_img_size(img_url):
+    """
+    Get the size of the image by making a GET requests and check the head
+    
+    returns size in human readable format , bytes
+    """
 
     if img_url is None:
         return None, None
@@ -131,25 +135,71 @@ def get_img_size(img_url, img_name):
     except :
         return None, None
 
-def get_log(media_items, file_name, flag, using_log=False):
+def generate_logs(command, media_items, file_name, existing_log=False):
+    """Generate log/cvs files based on date for either deleted/downloaded"""
+   
+    # getting the date for identifiying the file
+    date = datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+
+    # if existing log file
+    if existing_log:
+        
+        removing_flag = False
+        file_name = f"{file_name}_{date}.csv"
+        create_csv(media_items, file_name, removing_flag, using_log=True)
+
+        return
+    
+    # creating report file [json]
+    if command == '-g':
+
+        # getting the data 
+        data = extract_fields(media_items)
+
+        # Opening a file 
+        file_handler = open(f"{file_name}_{date}.json", 'w')
+
+        # Saving the data
+        json.dump(data, file_handler)
+
+        # Closing the file
+        file_handler.close()
+
+    # create downloaded/deleted file [csv]
+    if command == '-d':
+
+        file_name = f"downloaded_{date}.csv"
+        removing_flag = True
+        create_csv(media_items, file_name, removing_flag)
+
+
+    if command == '-dr' or command == '-r':
+
+        file_name = f"downloaded_{date}.csv"
+        removing_flag = False
+        create_csv(media_items, file_name, removing_flag)
+
+
+def create_csv(media_items, file_name, removed_flag, using_log=False):
     """Saving a log file with all the info about the images from starting date to ending date""" 
 
     import csv
 
     # checking if the file exists, yes then headers must have been added
-    header_added = os.path.isfile(file_name) 
+    header_added = False
+
     for media_item in media_items:
         img_name = media_item['filename']
         img_date = media_item['mediaMetadata']['creationTime']
         product_url = media_item['productUrl']
 
+
         if not using_log:
             img_url = media_item['baseUrl']
+            img_size, _ = get_img_size(img_url)
         else:
-            img_url = None
+            img_size = media_item['size_human'] 
 
-        # getting img size
-        img_size, _ = get_img_size(img_url, img_name)
 
         with open(file_name, mode='a', newline='') as log_file:
 
@@ -159,25 +209,29 @@ def get_log(media_items, file_name, flag, using_log=False):
             if not header_added: 
                 writer.writeheader()
                 header_added = True
+
             writer.writerow({
                 'Name': img_name,
                 'Url': product_url,
                 'Size': img_size,
                 'CreationDate': img_date,
-                'exists': flag
+                'exists': removed_flag
             })
 
-def save_logs(media_items):
-    """Save the logs for images based on some filters"""
+def extract_fields(media_items, existing_log=False):
+    """Extract photo properties from a media_items Object for appending to log file"""
 
-    # name of the log_file based on today's date
-    LOG_FILE_NAME = datetime.today().strftime('%Y-%m-%d_%H:%M:%S') + "_log.json"
-    logs_ = []
+    data = []
 
     for img_res in media_items:
 
         # no login is required to view, gonna use it to get the actual size of the image
-        img_url = img_res['baseUrl']
+        if existing_log:
+            img_url = img_res['baseUrl']
+            img_size_human, size_bytes  = get_img_size(img_url)
+        else:
+            img_size_human = img_res['size_human']
+            size_bytes = img_res['size_bytes']
 
         # requires login
         product_url = img_res['productUrl']
@@ -185,7 +239,6 @@ def save_logs(media_items):
         img_name = img_res['filename']
 
         # img size : 
-        img_size_human, size_bytes  = get_img_size(img_url, img_name)
 
         data_template = {
             "filename" : img_name,
@@ -198,18 +251,9 @@ def save_logs(media_items):
         }
 
         # appending 
-        logs_.append(data_template)
+        data.append(data_template)
 
-    # Opening a file 
-    file_ = open(LOG_FILE_NAME, 'w')
-
-    # Saving the data
-    json.dump(logs_, file_)
-
-    # Closing the file
-    file_.close()
-
-    return LOG_FILE_NAME
+    return data
 
 def get_total_size(log):
     """
@@ -248,6 +292,9 @@ def delete_images(media_items, log_file=None):
             # reading from a log file 
             file_handle = open(log_file, 'r')
             media_items = json.load(file_handle)
+
+            # creating a cvs here 
+            generate_logs('-r', media_items, '', existing_log=True)
 
             start_url = media_items[0]['productUrl']
             end_url = media_items[-1]['productUrl'] 
@@ -444,26 +491,18 @@ def do_command(command_type, service, request_body, mod_flag, use_media_items=Tr
         if use_media_items == False:
             media_items = None
             print(f"Getting data from {use_log_file} please wait...")
+
             delete_images(media_items, use_log_file)
 
-            # oh boi must return to avoid the next shit
             return
 
         # Removing the images
         print("Removing, please wait...")
         delete_images(media_items)
 
-    if command_type == '-g':
-        print("Saving to a log file...")
-
-        get_log(media_items, 'report_logs.csv', True) 
-        save_logs(media_items)
-
-        return
-
     # Saving logs
     print("Saving to a log file...")
-    get_log(media_items, 'downloaded_removed.csv', mod_flag) 
+    generate_logs(command_type, media_items, "log_test" )
 
 
 def main():
