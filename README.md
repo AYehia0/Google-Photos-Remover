@@ -24,8 +24,9 @@ Remove and Download photos from your Google-Photos using google's api and seleni
   1. API keys from google: check [google-console](https://console.cloud.google.com/apis/api/photoslibrary.googleapis.com/) then download the keys as json file.
   2. FIREFOX profile with your google account logged in : [mozila guide](https://support.mozilla.org/en-US/kb/profile-manager-create-remove-switch-firefox-profiles)
   3. Python 3.5+
-  4. Selenium, ```pip install selenium```
-  5. Geckodriver : install based on your OS, or use the one in the repo by specifiy the ```executable_path```
+  4. Install the google-api ```pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib``` 
+  5. Selenium, ```pip install selenium```
+  6. Geckodriver : install based on your OS, or use the one in the repo by specifiy the ```executable_path```
   
   
 # Installation 
